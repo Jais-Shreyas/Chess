@@ -19,17 +19,31 @@ def main():
   screen.fill(pg.Color("white"))
   gs = ChessEngine.GameState()
   loadImages()
-  # print(gs.board)
   running = True
+  sqSelected = ()    # tracks the last clicked cell
+  playerClicks = []  # keep tracks of player clicks (two tuples: [(r, c), (r, c)])
+  
   while running:
     for e in pg.event.get():
       if e.type == pg.QUIT:
         running = False
       elif e.type == pg.MOUSEBUTTONDOWN:
-        x, y = pg.mouse.get_pos()
-        x, y = x//SQ_SIZE, y//SQ_SIZE
-        print(gs.board[y][x])
-        # print(x, y)
+        col, row = pg.mouse.get_pos()
+        col, row = col//SQ_SIZE, row//SQ_SIZE
+        makeCellRed(screen, row, col)
+        if sqSelected == (row, col):  # deselect the square
+          sqSelected = ()
+          playerClicks = []
+        else:
+          sqSelected = (row, col)
+          playerClicks.append(sqSelected)
+        if len(playerClicks) == 2:    # make a move
+          move = ChessEngine.Move(playerClicks[0], playerClicks[1], gs.board)
+          print(move.getChessNotation())
+          gs.makeMove(move)
+          sqSelected = ()
+          playerClicks = []
+
     drawGameState(screen, gs)
     clock.tick(60)
   pg.quit()
@@ -45,6 +59,7 @@ def drawBoard(screen):
       color = colors[((r+c) % 2)]
       pg.draw.rect(screen, color, pg.Rect(c*SQ_SIZE, r*SQ_SIZE, SQ_SIZE, SQ_SIZE))
   pg.display.flip()
+  
 def drawPieces(screen, board):
   for r in range(Dimensions):
     for c in range(Dimensions):
