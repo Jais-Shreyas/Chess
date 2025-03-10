@@ -19,6 +19,8 @@ def main():
   screen.fill(pg.Color("white"))
   gs = ChessEngine.GameState()
   loadImages()
+  validMoves = gs.getValidMoves()   # this is an expensive operation
+  moveMade = False    # to check if a player makes a move
   running = True
   sqSelected = ()    # tracks the last clicked cell
   playerClicks = []  # keep tracks of player clicks (two tuples: [(r, c), (r, c)])
@@ -30,7 +32,6 @@ def main():
       elif e.type == pg.MOUSEBUTTONDOWN:
         col, row = pg.mouse.get_pos()
         col, row = col//SQ_SIZE, row//SQ_SIZE
-        makeCellRed(screen, row, col)
         if sqSelected == (row, col):  # deselect the square
           sqSelected = ()
           playerClicks = []
@@ -40,12 +41,20 @@ def main():
         if len(playerClicks) == 2:    # make a move
           move = ChessEngine.Move(playerClicks[0], playerClicks[1], gs.board)
           print(move.getChessNotation())
-          gs.makeMove(move)
+          if move in validMoves:    # in lecture 3, it was done.
+            gs.makeMove(move)
+            moveMade = True
           sqSelected = ()
           playerClicks = []
-
+      elif e.type == pg.KEYDOWN:
+        if e.key == pg.K_z:
+          gs.Undo()
+          moveMade = True
+    if moveMade:
+      validMoves = gs.getValidMoves()
+      moveMade = False
     drawGameState(screen, gs)
-    clock.tick(60)
+    clock.tick(Max_FPS)
   pg.quit()
   
 def drawGameState(screen, gs):
