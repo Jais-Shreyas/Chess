@@ -59,19 +59,21 @@ def main():
         if moveMade:
             validMoves=gs.getValidMoves()
             moveMade=False
-        drawGameState(screen,gs)
+        drawGameState(screen,gs, sqSelected)
         clock.tick(MAX_FPS)
         p.display.flip()
 
-def drawGameState(screen,gs):
-    drawBoard(screen)               #draw the board
+def drawGameState(screen,gs, sqSelected):
+    drawBoard(screen, sqSelected)               #draw the board
     drawPieces(screen,gs.board)     #draw the pieces on the board
 
-def drawBoard(screen):
+def drawBoard(screen, sqSelected):
     colors=[p.Color(240,217,181,1),p.Color(181,136,99,1)]       #square colors
     for r in range(DIMENSION):
         for c in range(DIMENSION):
             color=colors[((r+c)%2)]
+            if (r,c)==sqSelected:
+                color=p.Color(255,0,0,1)
             p.draw.rect(screen,color,p.Rect(c*SQ_SIZE,r*SQ_SIZE,SQ_SIZE,SQ_SIZE))
 
 def drawPieces(screen,board):
