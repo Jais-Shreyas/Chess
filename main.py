@@ -50,8 +50,10 @@ def main():
                     if move in validMoves:
                         gs.makeMove(move)
                         moveMade=True
-                    sqSelected=()
-                    playerClicks=[]
+                        sqSelected=()
+                        playerClicks=[]
+                    else:
+                        playerClicks=[sqSelected]
             elif e.type==p.KEYDOWN:
                 if e.key==p.K_z:
                     gs.undoMove()
@@ -73,7 +75,7 @@ def drawBoard(screen, sqSelected):
         for c in range(DIMENSION):
             color=colors[((r+c)%2)]
             if (r,c)==sqSelected:
-                color=p.Color(255,0,0,1)
+                color=p.Color(130,151,105,1)
             p.draw.rect(screen,color,p.Rect(c*SQ_SIZE,r*SQ_SIZE,SQ_SIZE,SQ_SIZE))
 
 def drawPieces(screen,board):
