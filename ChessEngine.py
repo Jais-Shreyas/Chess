@@ -418,7 +418,7 @@ class GameState():
         # self.getCastleMoves(r, c, moves)
                         
     def getCastleMoves(self, r, c, moves):
-        print("checking castle moves")
+        # print("checking castle moves")
         if (self.inCheck):
             return
         if ((self.whiteToMove and self.currentCastlingRights.wKS) or (not self.whiteToMove and self.currentCastlingRights.bKS)):
