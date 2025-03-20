@@ -45,15 +45,15 @@ class GameState():
         if move.pieceCaptured == 'wR':
             if move.endRow == 7:
                 if move.endCol == 0:
-                    self.currentCastlingRight.wqs = False
+                    self.currentCastlingRights.wqs = False
                 elif move.endCol == 7:
-                    self.currentCastlingRight.wks = False
+                    self.currentCastlingRights.wks = False
         elif move.pieceCaptured == 'bR':
             if move.endRow == 0:
                 if move.endCol == 0:
-                    self.currentCastlingRight.bqs = False
+                    self.currentCastlingRights.bqs = False
                 elif move.endCol == 7:
-                    self.currentCastlingRight.bks = False
+                    self.currentCastlingRights.bks = False
         # handle pawn promotion currently by input from user
         # need to change this to a better way later
         if (move.isPawnPromotion):
@@ -418,7 +418,7 @@ class GameState():
         # self.getCastleMoves(r, c, moves)
                         
     def getCastleMoves(self, r, c, moves):
-        print("checking castle moves")
+        # print("checking castle moves")
         if (self.inCheck):
             return
         if ((self.whiteToMove and self.currentCastlingRights.wKS) or (not self.whiteToMove and self.currentCastlingRights.bKS)):
