@@ -29,7 +29,7 @@ def main():
     animate =False
     # print(gs.board)
     gameOver=False
-    playerOne = False  # If a player is playing White it's true, if AI is playing it's false
+    playerOne = True  # If a player is playing White it's true, if AI is playing it's false
     playerTwo = False  # If a player is playing Black it's true, if AI is playing it's false
     loadImages()
     sqSelected = ()       # track of last click of user (tuple: (row, col))
@@ -39,9 +39,11 @@ def main():
         humanTurn = (gs.whiteToMove and playerOne) or (not gs.whiteToMove and playerTwo)
         for e in p.event.get():
             if e.type == p.QUIT:
+                p.quit()
+                sys.exit()
                 running = False
             elif e.type == p.MOUSEBUTTONDOWN:
-                if not gameOver and humanTurn:
+                if not gameOver:
                     location = p.mouse.get_pos()         #coordinates of mouse click
                     col = location[0]//SQ_SIZE
                     row = location[1]//SQ_SIZE
@@ -51,7 +53,7 @@ def main():
                     else:   
                         sqSelected = (row, col)
                         playerClicks.append(sqSelected)
-                    if len(playerClicks) == 2:
+                    if len(playerClicks) == 2 and humanTurn:
                         move=ChessEngine.Move(playerClicks[0], playerClicks[1], gs.board)
                         # print(move.getChessNotation())
                         for i in range(len(validMoves)):
@@ -77,8 +79,10 @@ def main():
                     animate=False
 
         # AI turn       
-        if not gameOver and not humanTurn :
-            AIMove = SmartMoveFinder.findRandomMove(validMoves)
+        if not gameOver and not humanTurn:
+            AIMove = SmartMoveFinder.findBestMove(gs, validMoves)
+            if AIMove is None:
+                AIMove = SmartMoveFinder.findRandomMove(validMoves)
             gs.makeMove(AIMove)
             moveMade = True
             animate = True
