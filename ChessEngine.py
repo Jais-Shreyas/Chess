@@ -115,6 +115,8 @@ class GameState():
                 else:                   # queen side castle
                     self.board[move.endRow][move.endCol - 2] = self.board[move.endRow][move.endCol + 1]  # move rook to old position
                     self.board[move.endRow][move.endCol + 1] = "--"  # remove rook from new position
+            self.checkMate = False
+            self.staleMate = False
             
     
     def updateCastleRights(self,move):

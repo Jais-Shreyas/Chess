@@ -40,7 +40,6 @@ def main():
         for e in p.event.get():
             if e.type == p.QUIT:
                 p.quit()
-                sys.exit()
                 running = False
             elif e.type == p.MOUSEBUTTONDOWN:
                 if not gameOver:
@@ -68,19 +67,22 @@ def main():
             elif e.type == p.KEYDOWN:
                 if e.key == p.K_z:
                     gs.undoMove()
-                    moveMade=True
+                    moveMade = True
+                    animate = False
+                    gameOver = False
                 if e.key == p.K_r:
                     # pass
-                    gs=ChessEngine.GameState()
+                    gs = ChessEngine.GameState()
                     validMoves = gs.getValidMoves()
-                    sqSelected=()
-                    playerClicks=[]
-                    moveMade=False
-                    animate=False
+                    sqSelected = ()
+                    playerClicks = []
+                    moveMade = False
+                    animate = False
+                    gameOver = False
 
         # AI turn       
         if not gameOver and not humanTurn:
-            AIMove = SmartMoveFinder.findBestMove(gs, validMoves)
+            AIMove = SmartMoveFinder.findBestMoveMinMax(gs, validMoves)
             if AIMove is None:
                 AIMove = SmartMoveFinder.findRandomMove(validMoves)
             gs.makeMove(AIMove)
