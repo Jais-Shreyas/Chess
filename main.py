@@ -2,6 +2,7 @@
 
 import pygame as p
 import ChessEngine
+import SmartMoveFinder
 
 WIDTH = HEIGHT = 512
 DIMENSION = 8
@@ -28,16 +29,19 @@ def main():
     animate =False
     # print(gs.board)
     gameOver=False
+    playerOne = False  # If a player is playing White it's true, if AI is playing it's false
+    playerTwo = False  # If a player is playing Black it's true, if AI is playing it's false
     loadImages()
     sqSelected = ()       # track of last click of user (tuple: (row, col))
     playerClicks = []     # track of player clicks (two tuples)
     running = True
     while running:
+        humanTurn = (gs.whiteToMove and playerOne) or (not gs.whiteToMove and playerTwo)
         for e in p.event.get():
             if e.type == p.QUIT:
                 running = False
             elif e.type == p.MOUSEBUTTONDOWN:
-                if not gameOver:
+                if not gameOver and humanTurn:
                     location = p.mouse.get_pos()         #coordinates of mouse click
                     col = location[0]//SQ_SIZE
                     row = location[1]//SQ_SIZE
@@ -71,11 +75,17 @@ def main():
                     playerClicks=[]
                     moveMade=False
                     animate=False
-                    
-                    
+
+        # AI turn       
+        if not gameOver and not humanTurn :
+            AIMove = SmartMoveFinder.findRandomMove(validMoves)
+            gs.makeMove(AIMove)
+            moveMade = True
+            animate = True
+
         if moveMade:
             if animate:
-                animateMove(move, screen, gs.board,clock)
+                animateMove(gs.moveLog[-1], screen, gs.board, clock)
             validMoves = gs.getValidMoves()
             moveMade = False
             animate=False
