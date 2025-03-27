@@ -1,6 +1,7 @@
 #For user input and handling gamestate
 
-import pygame as p
+import pygame as p 
+#abhinav is gay
 import ChessEngine
 import SmartMoveFinder
 
@@ -162,10 +163,6 @@ def drawEndGameText(screen, text):
     text_object = font.render(text, False, p.Color('black'))
     screen.blit(text_object, text_location.move(2, 2))
     
-def drawPieces(screen,board):
-            if (r, c) == sqSelected:
-                color = p.Color(130, 151, 105, 1)
-            p.draw.rect(screen, color, p.Rect(c*SQ_SIZE, r*SQ_SIZE, SQ_SIZE, SQ_SIZE))
 
 def drawPieces(screen, board):
     for r in range(DIMENSION):
