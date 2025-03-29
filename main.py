@@ -10,15 +10,113 @@ SQ_SIZE = HEIGHT//DIMENSION
 MAX_FPS = 15 #for animations
 IMAGES = {}
 
-#loading images once
-def loadImages():
-    pieces=['bR', 'bN', 'bB', 'bQ', 'bK', 'bP', 'wR', 'wN', 'wB', 'wQ', 'wK', 'wP']
+CURRENT_THEME = "theme1"  # Default theme
+THEMES = {
+    "theme1": "images/",
+    "theme2": "images2/"  # Path to your new theme images
+}
+
+# Load images based on selected theme
+def loadImages(theme_path):
+    pieces = ['bR', 'bN', 'bB', 'bQ', 'bK', 'bP', 'wR', 'wN', 'wB', 'wQ', 'wK', 'wP']
     for piece in pieces:
-        IMAGES[piece]=p.transform.scale(p.image.load("images/"+piece+".png"), (SQ_SIZE, SQ_SIZE))
+        IMAGES[piece] = p.transform.scale(p.image.load(theme_path + piece + ".png"), (SQ_SIZE, SQ_SIZE))
+
+# Button class
+class Button:
+    def __init__(self, x, y, width, height, text, color, hover_color):
+        self.rect = p.Rect(x, y, width, height)
+        self.text = text
+        self.color = color
+        self.hover_color = hover_color
+        self.is_hovered = False
+        
+    def draw(self, screen):
+        color = self.hover_color if self.is_hovered else self.color
+        p.draw.rect(screen, color, self.rect)
+        
+        font = p.font.SysFont("comicsansms", 20)
+        text_surf = font.render(self.text, True, p.Color("black"))
+        text_rect = text_surf.get_rect(center=self.rect.center)
+        screen.blit(text_surf, text_rect)
+        
+    def check_hover(self, pos):
+        self.is_hovered = self.rect.collidepoint(pos)
+        
+    def is_clicked(self, pos, click):
+        return self.rect.collidepoint(pos) and click[0]
+
+# Theme selection screen
+def theme_selection_screen():
+    p.init()
+    screen = p.display.set_mode((WIDTH, HEIGHT))
+    p.display.set_caption("Chess Theme Selection")
+    clock = p.time.Clock()
     
+    # Create buttons
+    theme1_button = Button(WIDTH//2 - 150, HEIGHT//2 - 60, 300, 50, "Lichess Theme", p.Color(181,135,99),p.Color(240,218,181) )
+    theme2_button = Button(WIDTH//2 - 150, HEIGHT//2 + 10, 300, 50, "Chess.com Theme", p.Color(114,148,81), p.Color(236,236,208))
+    
+    running = True
+    selected_theme = None
+    
+    while running:
+        mouse_pos = p.mouse.get_pos()
+        mouse_click = p.mouse.get_pressed()
+        
+        for event in p.event.get():
+            if event.type == p.QUIT:
+                p.quit()
+                return None
+                
+        # Check button hover and clicks
+        theme1_button.check_hover(mouse_pos)
+        theme2_button.check_hover(mouse_pos)
+        
+        if theme1_button.is_clicked(mouse_pos, mouse_click):
+            selected_theme = "theme1"
+            running = False
+            
+        if theme2_button.is_clicked(mouse_pos, mouse_click):
+            selected_theme = "theme2"
+            running = False
+            
+        # Draw screen
+        screen.fill(p.Color(253,251,212))
+        
+        # Draw title
+        font = p.font.Font("freesansbold.ttf", 36)
+        title_surf = font.render("Select Chess Theme", True, p.Color("black"))
+        title_rect = title_surf.get_rect(center=(WIDTH//2, HEIGHT//4))
+        screen.blit(title_surf, title_rect)
+        
+        # Draw buttons
+        theme1_button.draw(screen)
+        theme2_button.draw(screen)
+        
+        rule_font = p.font.Font("freesansbold.ttf", 22)
+        rules = rule_font.render("Use Z to undo and R for restart", True, p.Color("black"))
+        rule_rect = rules.get_rect(center=(WIDTH//2, 3*HEIGHT//4))
+        screen.blit(rules, rule_rect)
+        p.display.flip()
+        clock.tick(MAX_FPS)
+        
+        # Add small delay to prevent multiple clicks
+        if any(mouse_click):
+            p.time.delay(200)
+            
+    return selected_theme
+
 
 #main code- user input and updating graphics
 def main():
+    selected_theme = theme_selection_screen()
+    if selected_theme is None:
+        return
+        
+    # Load images based on selected theme
+    loadImages(THEMES[selected_theme])
+    
     p.init()
     screen = p.display.set_mode((WIDTH, HEIGHT))
     clock = p.time.Clock()
@@ -31,7 +129,7 @@ def main():
     gameOver=False
     playerOne = True  # If a player is playing White it's true, if AI is playing it's false
     playerTwo = False  # If a player is playing Black it's true, if AI is playing it's false
-    loadImages()
+    # loadImages()
     sqSelected = ()       # track of last click of user (tuple: (row, col))
     playerClicks = []     # track of player clicks (two tuples)
     running = True
@@ -91,11 +189,11 @@ def main():
 
         if moveMade:
             if animate:
-                animateMove(gs.moveLog[-1], screen, gs.board, clock)
+                animateMove(gs.moveLog[-1], screen, gs.board, clock,selected_theme)
             validMoves = gs.getValidMoves()
             moveMade = False
             animate=False
-        drawGameState(screen,gs,validMoves, sqSelected)
+        drawGameState(screen,gs,validMoves, sqSelected,selected_theme)
         
         if gs.checkMate:
             gameOver = True
@@ -138,14 +236,17 @@ def highlightSquares(screen, game_state, valid_moves, square_selected):
                     screen.blit(s, (move.endCol * SQ_SIZE, move.endRow * SQ_SIZE))
     
 
-def drawGameState(screen,gs,validMoves, sqSelected):
-    drawBoard(screen, sqSelected)               #draw the board
+def drawGameState(screen,gs,validMoves, sqSelected,theme):
+    drawBoard(screen, sqSelected,theme)               #draw the board
     highlightSquares(screen, gs, validMoves, sqSelected)
     drawPieces(screen,gs.board)     #draw the pieces on the board
     drawPieces(screen, gs.board)     #draw the pieces on the board
 
-def drawBoard(screen,  sqSelected):
-    colors=[p.Color(240, 217, 181, 1), p.Color(181, 136, 99, 1)]       #square colors
+def drawBoard(screen,  sqSelected,theme):
+    if(theme=="theme1"):
+        colors=[p.Color(240, 217, 181, 1), p.Color(181, 136, 99, 1)]
+    else:
+        colors=[p.Color(236,236,208,1),p.Color(114,148,81,1)]       #square colors
     for r in range(DIMENSION):
         for c in range(DIMENSION):
             color=colors[((r+c)%2)]
@@ -162,10 +263,6 @@ def drawEndGameText(screen, text):
     text_object = font.render(text, False, p.Color('black'))
     screen.blit(text_object, text_location.move(2, 2))
     
-def drawPieces(screen,board):
-            if (r, c) == sqSelected:
-                color = p.Color(130, 151, 105, 1)
-            p.draw.rect(screen, color, p.Rect(c*SQ_SIZE, r*SQ_SIZE, SQ_SIZE, SQ_SIZE))
 
 def drawPieces(screen, board):
     for r in range(DIMENSION):
@@ -174,7 +271,7 @@ def drawPieces(screen, board):
             if piece!="--":
                 screen.blit(IMAGES[piece], p.Rect(c*SQ_SIZE, r*SQ_SIZE, SQ_SIZE, SQ_SIZE))         #piece on board
 
-def animateMove(move, screen, board, clock):
+def animateMove(move, screen, board, clock,theme):
     """
     Animating a move
     """
@@ -186,7 +283,7 @@ def animateMove(move, screen, board, clock):
     frame_count = (abs(dRow) + abs(dCol)) * frames_per_square
     for frame in range(frame_count + 1):
         row, col = (move.startRow + dRow * frame / frame_count, move.startCol + dCol * frame / frame_count)
-        drawBoard(screen , (row,col))
+        drawBoard(screen , (row,col),theme)
         drawPieces(screen, board)
         # erase the piece moved from its ending square
         color = colors[(move.endRow + move.endCol) % 2]
