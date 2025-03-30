@@ -7,14 +7,14 @@ DEPTH = 3
 
 # Find the best move on the material alone
 
-def findBestMove(gs, validMoves):
+def findBestMove(gs, validMoves, isAI):
     turnMultiplier = 1 if gs.whiteToMove else -1
     opponentMinMaxScore = CHECKMATE
     bestPlayerMove = None
     random.shuffle(validMoves)
     for playerMove in validMoves:
-        gs.makeMove(playerMove)
-        opponentMoves = gs.getValidMoves()
+        gs.makeMove(playerMove, isAI)
+        opponentMoves = gs.getValidMoves(isAI)
         if gs.staleMate:
             opponentMaxScore = STALEMATE
         elif gs.checkMate:
@@ -22,8 +22,8 @@ def findBestMove(gs, validMoves):
         else:
             opponentMaxScore = -CHECKMATE
             for opponentsMove in opponentMoves :
-                gs.makeMove(opponentsMove)
-                gs.getValidMoves()
+                gs.makeMove(opponentsMove, isAI)
+                gs.getValidMoves(isAI)
                 if gs.checkMate:
                     score = CHECKMATE
                 elif gs.staleMate:
@@ -42,24 +42,24 @@ def findBestMove(gs, validMoves):
 
 # Helper method to make first recursive call
 
-def findBestMoveMinMax(gs, validMoves):
+def findBestMoveMinMax(gs, validMoves, isAI = False):
     global nextMove
     nextMove = None
-    findMoveMinMax(gs, validMoves, DEPTH, gs.whiteToMove)
+    findMoveMinMax(gs, validMoves, DEPTH, gs.whiteToMove, isAI)
     return nextMove
 
 
-def findMoveMinMax(gs, validMoves, depth, whiteToMove):
+def findMoveMinMax(gs, validMoves, depth, whiteToMove, isAI = False):
     global nextMove
     if depth == 0:
         return scoreMaterial(gs.board)
-    
+    random.shuffle(validMoves)
     if whiteToMove:
         maxScore = -CHECKMATE
         for move in validMoves:
-            gs.makeMove(move)
-            nextMoves = gs.getValidMoves()
-            score = findMoveMinMax(gs, nextMoves, depth - 1, False)
+            gs.makeMove(move, isAI)
+            nextMoves = gs.getValidMoves(isAI)
+            score = findMoveMinMax(gs, nextMoves, depth - 1, False, isAI)
             if score > maxScore:
                 maxScore = score
                 if depth == DEPTH:
@@ -70,9 +70,9 @@ def findMoveMinMax(gs, validMoves, depth, whiteToMove):
     else:
         minScore = CHECKMATE
         for move in validMoves:
-            gs.makeMove(move)
-            nextMoves = gs.getValidMoves()
-            score = findMoveMinMax(gs, nextMoves, depth - 1, True)
+            gs.makeMove(move, isAI)
+            nextMoves = gs.getValidMoves(isAI)
+            score = findMoveMinMax(gs, nextMoves, depth - 1, True, isAI)
             if score < minScore:
                 minScore = score
                 if depth == DEPTH:

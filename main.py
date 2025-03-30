@@ -180,10 +180,10 @@ def main():
 
         # AI turn       
         if not gameOver and not humanTurn:
-            AIMove = SmartMoveFinder.findBestMoveMinMax(gs, validMoves)
+            AIMove = SmartMoveFinder.findBestMoveMinMax(gs, validMoves, True)
             if AIMove is None:
                 AIMove = SmartMoveFinder.findRandomMove(validMoves)
-            gs.makeMove(AIMove)
+            gs.makeMove(AIMove, isAI=True)
             moveMade = True
             animate = True
 
