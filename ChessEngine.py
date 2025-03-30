@@ -2,7 +2,9 @@
 
 class GameState():
     def __init__(self):
-        #board
+        #board is a 8x8 2d list, each element of the list has 2 characters
+        #The first character represents the color of the piece, 'b' or 'w'
+        #The second character represents the type of the piece,
         self.board = [
             ["bR","bN","bB","bQ","bK","bB","bN","bR"],
             ["bP","bP","bP","bP","bP","bP","bP","bP"],
@@ -24,6 +26,7 @@ class GameState():
         self.pins = []
         self.checks = []
         self.enpassantPossible = () #corridnates of enpassant cell
+        self.enpassantPossibleLog = [self.enpassantPossible]
         self.currentCastlingRights = CastleRights(True, True, True, True) # white king side, black king side, white queen side, black queen side
         # castle log to keep track of castling rights and tracks and undo them easily
         # self.castleRightsLog = [self.currentCastlingRights]  # this does not make a copy of the object, it just makes a reference to the object. So when we change the object, it will change in the list as well. So we need to make a copy of the object and append it to the list.
@@ -77,6 +80,8 @@ class GameState():
             else:                  # queen side castle
                 self.board[move.endRow][move.endCol + 1] = self.board[move.endRow][move.endCol - 2]  # move rook to queen side          
                 self.board[move.endRow][move.endCol - 2] = "--"  # remove rook from old position
+
+        self.enpassantPossibleLog.append(self.enpassantPossible)
         # update castle rights
         self.updateCastleRights(move)
         
@@ -98,10 +103,9 @@ class GameState():
             if (move.isEnpassantMove):
                 self.board[move.endRow][move.endCol] = "--"  #landing square remains blank
                 self.board[move.startRow][move.endCol] = move.pieceCaptured  # restore the pawn that was captured enpassant
-                self.enpassantPossible = (move.endRow, move.endCol)  # restore the enpassant square
-            # restore 2 square pawn move
-            if (move.pieceMoved[1] == "P" and abs(move.startRow - move.endRow) == 2):
-                self.enpassantPossible = ()
+               
+            self.enpassantPossibleLog.pop()
+            self.enpassantPossible = self.enpassantPossibleLog[-1]
             # restore castling rights
             self.castleRightsLog.pop()  # remove the last castling rights
             previousCastleRights = self.castleRightsLog[-1]  # get the previous castling rights
@@ -438,14 +442,14 @@ class GameState():
             #         moves.append(Move((r,c),(r,c+2),self.board, isCastleMove = True))
         
     def getQueenSideCastleMoves(self, r, c, moves):   
-        if (self.board[r][c-1] == '--' and self.board[r][c-2] == '--' and self.board[r][c-3] == '--'):
+        if (self.board[r][c-1] == '--' and self.board[r][c-2] == '--' and self.board[r][c-3]):
             # if (self.whiteToMove):
                 if (not self.squareUnderAttack(r, c - 1) and not self.squareUnderAttack(r, c - 2)):  # no need to check for check in third square
                     moves.append(Move((r,c),(r,c-2),self.board, isCastleMove = True))
             # else:
             #     if (not self.squareUnderAttack(r, c - 1) and not self.squareUnderAttack(r, c - 2)):
             #         moves.append(Move((r,c),(r,c-2),self.board, isCastleMove = True))
-
+ 
     def checkForPinsAndChecks(self):
         pins = []
         checks = []
@@ -531,7 +535,7 @@ class Move():
         self.startRow=startSq[0]
         self.startCol=startSq[1]
         self.endRow=endSq[0]
-        self.endCol=endSq[1]
+        self.endCol=endSq[1]    
         self.pieceMoved=board[self.startRow][self.startCol]
         self.pieceCaptured=board[self.endRow][self.endCol]
         #pawn promotion
@@ -543,6 +547,8 @@ class Move():
         #castle move
         self.isCastleMove = isCastleMove
         #castle rights
+
+        self.isCapture = self.pieceCaptured != '--'
         
         #assign each move a unique id
         self.moveID = 1000 * self.startRow + 100 * self.startCol + 10 * self.endRow + self.endCol              #unique move ids
@@ -559,3 +565,26 @@ class Move():
 
     def getRankFile(self,r,c):
         return self.colsToFiles[c]+self.rowsToRanks[r]
+    
+    #overriding the str() function
+    def __str__(self):
+        #castle move
+        if self.isCastleMove:
+            return "O-O" if self.endCol == 6 else "O-O-O"
+        
+        endSquare = self.getRankFile(self.endRow,self.endCol)
+        #pawn moves
+        if self.pieceMoved[1] == 'p':
+            if self.isCapture:
+                return self.colsToFiles[self.startCol] + "x" + endSquare
+            else:
+                return endSquare
+            
+        #two of the same type of piece moving to a square,Nbd if both knights can move to d2
+        #also adding + for check move, and # for a checkmate move
+
+        #piece moves
+        moveString = self.pieceMoved[1]
+        if self.isCapture:
+            moveString += 'x'
+        return moveString + endSquare
