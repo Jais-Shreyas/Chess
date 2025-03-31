@@ -35,7 +35,7 @@ def main():
     # print(gs.board)
     gameOver=False
     playerOne = True  # If a player is playing White it's true, if AI is playing it's false
-    playerTwo = False  # If a player is playing Black it's true, if AI is playing it's false
+    playerTwo = True  # If a player is playing Black it's true, if AI is playing it's false
     loadImages()
     sqSelected = ()       # track of last click of user (tuple: (row, col))
     playerClicks = []     # track of player clicks (two tuples)
