@@ -33,7 +33,7 @@ class GameState():
         self.castleRightsLog = [CastleRights(self.currentCastlingRights.wKS, self.currentCastlingRights.bKS,
                                              self.currentCastlingRights.wQS, self.currentCastlingRights.bQS)]  # this does not make a copy of the object, it just makes a reference to the object. So when we change the object, it will change in the list as well. So we need to make a copy of the object and append it to the list.
     
-    def makeMove(self,move):
+    def makeMove(self,move, isAI = False):
         self.board[move.startRow][move.startCol] = "--"
         self.board[move.endRow][move.endCol] = move.pieceMoved
         self.moveLog.append(move)
@@ -60,7 +60,9 @@ class GameState():
         # handle pawn promotion currently by input from user
         # need to change this to a better way later
         if (move.isPawnPromotion):
-            promotedPiece = input("Promote to Queen(Q), Rook(R), Bishop(B), Knight(N): ").upper()
+            promotedPiece = "Q"  # default to queen
+            if not isAI:
+                promotedPiece = input("Promote to Queen(Q), Rook(R), Bishop(B), Knight(N): ").upper()
             self.board[move.endRow][move.endCol] = move.pieceMoved[0] + promotedPiece
 
         # enpassant move
@@ -145,7 +147,7 @@ class GameState():
                                                  self.currentCastlingRights.bKS, self.currentCastlingRights.bQS))
     
     #Moves with Checks
-    def getValidMoves(self):
+    def getValidMoves(self, isAI = False):
         # store current castling rights
         currCastleRights = CastleRights(self.currentCastlingRights.wKS, self.currentCastlingRights.bKS,
                                         self.currentCastlingRights.wQS, self.currentCastlingRights.bQS)
@@ -160,7 +162,7 @@ class GameState():
             kingCol = self.blackKingLoc[1]
         if (self.inCheck):
             if (len(self.checks) == 1):
-                moves = self.getAllPossibleMoves()
+                moves = self.getAllPossibleMoves(isAI)
                 check = self.checks[0]
                 checkRow = check[0]
                 checkCol = check[1]
@@ -189,7 +191,7 @@ class GameState():
                 self.getKingMoves(kingRow, kingCol, moves) 
         # not in check, so all moves are fine
         else:
-            moves = self.getAllPossibleMoves()
+            moves = self.getAllPossibleMoves(isAI)
             # check for king castle moves, we don't need colors here as they already point to appropriate king location
             self.getCastleMoves(kingRow, kingCol, moves)
         
@@ -254,7 +256,7 @@ class GameState():
                 return True
         return False
     
-    def getAllPossibleMoves(self):
+    def getAllPossibleMoves(self, isAI = False):
         moves = []
         for r in range(len(self.board)):
             for c in range(len(self.board[r])):

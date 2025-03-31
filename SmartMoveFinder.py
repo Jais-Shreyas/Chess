@@ -156,17 +156,17 @@ def findBestMove(gs, validMoves,returnQueue):
     returnQueue.put(nextMove)
 
 
-def findMoveMinMax(gs, validMoves, depth, whiteToMove):
+def findMoveMinMax(gs, validMoves, depth, whiteToMove, isAI = False):
     global nextMove
     if depth == 0:
         return scoreMaterial(gs.board)
-    
+    random.shuffle(validMoves)
     if whiteToMove:
         maxScore = -CHECKMATE
         for move in validMoves:
-            gs.makeMove(move)
-            nextMoves = gs.getValidMoves()
-            score = findMoveMinMax(gs, nextMoves, depth - 1, False)
+            gs.makeMove(move, isAI)
+            nextMoves = gs.getValidMoves(isAI)
+            score = findMoveMinMax(gs, nextMoves, depth - 1, False, isAI)
             if score > maxScore:
                 maxScore = score
                 if depth == DEPTH:
@@ -178,9 +178,9 @@ def findMoveMinMax(gs, validMoves, depth, whiteToMove):
     else:
         minScore = CHECKMATE
         for move in validMoves:
-            gs.makeMove(move)
-            nextMoves = gs.getValidMoves()
-            score = findMoveMinMax(gs, nextMoves, depth - 1, True)
+            gs.makeMove(move, isAI)
+            nextMoves = gs.getValidMoves(isAI)
+            score = findMoveMinMax(gs, nextMoves, depth - 1, True, isAI)
             if score < minScore:
                 minScore = score
                 if depth == DEPTH:
