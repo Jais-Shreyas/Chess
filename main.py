@@ -16,8 +16,8 @@ IMAGES = {}
 
 CURRENT_THEME = "theme1"  # Default theme
 THEMES = {
-    "theme1": "images/",
-    "theme2": "images2/"  # Path to your new theme images
+    "theme1": "Images/",
+    "theme2": "Images2/"  # Path to your new theme images
 }
 
 # Load images based on selected theme
@@ -138,7 +138,7 @@ def main():
     AIThinking = False
     moveFinderProcess = None
     moveUndone = False
-    loadImages()
+    #loadImages()
     sqSelected = ()       # track of last click of user (tuple: (row, col))
     playerClicks = []     # track of player clicks (two tuples)
     running = True
@@ -228,7 +228,7 @@ def main():
 
         if moveMade:
             if animate:
-                animateMove(gs.moveLog[-1], screen, gs.board, clock,selected_theme)
+                animateMove(gs.moveLog[-1], screen, gs.board, clock)
             validMoves = gs.getValidMoves()
             moveMade = False
             animate=False
@@ -243,11 +243,12 @@ def main():
         p.display.flip()
 
 
-def drawGameState(screen,gs,validMoves, sqSelected,moveLogFont):
+def drawGameState(screen,gs,validMoves, sqSelected,selected_theme):
     drawBoard(screen, sqSelected)               #draw the board
     highlightSquares(screen, gs, validMoves, sqSelected)
     drawPieces(screen,gs.board)     #draw the pieces on the board
-    drawMoveLog(screen, gs,moveLogFont)     #draw the pieces on the board
+    moveLogFont = p.font.SysFont("Arial", 12, False, False)
+    drawMoveLog(screen, gs, moveLogFont)     #draw the move log
 
 def drawBoard(screen,  sqSelected):
     colors=[p.Color(240, 217, 181, 1), p.Color(181, 136, 99, 1)]       #square colors
